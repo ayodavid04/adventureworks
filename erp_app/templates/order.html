@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_tag, sim_tag %}
+{% block title %}{{ h.sales_order_number }} - AdventureWorks ERP (demo){% endblock %}
+{% block body %}
+<p class="crumbs"><a href="/orders">Sales orders</a> / {{ h.sales_order_number }}</p>
+<h1>Sales order {{ h.sales_order_number }} {{ status_tag(h.status_code, h.status) }} {{ sim_tag(h.comment) }}</h1>
+<div class="cols">
+<table class="kv">
+  <tr><th>Customer</th><td><a href="/customers/{{ h.customer_id }}">{{ h.customer_name }}</a> ({{ h.customer_id }})</td></tr>
+  <tr><th>Channel</th><td>{{ 'Online' if h.online_order else 'Store (reseller)' }}</td></tr>
+  <tr><th>Sales person</th><td>{{ h.sales_person or '' }}</td></tr>
+  <tr><th>Territory</th><td>{{ h.territory }}</td></tr>
+  <tr><th>Customer PO</th><td>{{ h.purchase_order_number or '' }}</td></tr>
+  <tr><th>Revision</th><td>{{ h.revision_number }}</td></tr>
+</table>
+<table class="kv">
+  <tr><th>Order date</th><td>{{ h.order_date | when }}</td></tr>
+  <tr><th>Due date</th><td>{{ h.due_date | when }}</td></tr>
+  <tr><th>Ship date</th><td>{{ h.ship_date | when }}</td></tr>
+  <tr><th>Ship method</th><td>{{ h.ship_method }}</td></tr>
+  <tr><th>Bill to</th><td>{{ h.bill_to }}</td></tr>
+  <tr><th>Ship to</th><td>{{ h.ship_to }}</td></tr>
+</table>
+<table class="kv">
+  <tr><th>Subtotal</th><td class="num">{{ h.subtotal | money }}</td></tr>
+  <tr><th>Tax</th><td class="num">{{ h.tax_amount | money }}</td></tr>
+  <tr><th>Freight</th><td class="num">{{ h.freight | money }}</td></tr>
+  <tr><th>Total due</th><td class="num"><b>{{ h.total_due | money }}</b></td></tr>
+  <tr><th>Last changed (UTC)</th><td>{{ h.modified_at | when }}</td></tr>
+  <tr><th>Comment</th><td>{{ h.comment or '' }}</td></tr>
+</table>
+</div>
+<h2>Lines</h2>
+<table class="grid">
+  <thead><tr><th>Line</th><th>Product no.</th><th>Product</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Discount</th><th class="num">Line total</th></tr></thead>
+  <tbody>
+  {% for l in lines %}
+  <tr><td>{{ l.id }}</td><td>{{ l.product_number }}</td><td><a href="/products/{{ l.product_id }}">{{ l.product_name }}</a></td><td class="num">{{ l.order_qty }}</td>
+      <td class="num">{{ l.unit_price | money }}</td><td class="num">{{ "{:.0%}".format(l.unit_price_discount | float) }}</td><td class="num">{{ l.line_total | money }}</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr><td colspan="6">{{ lines | length }} lines. Line total = unit price x (1 - discount) x qty, worked out here because the Postgres port has no LineTotal column.</td>
+      <td class="num"><b>{{ lines_total | money }}</b></td></tr></tfoot>
+</table>
+{% endblock %}

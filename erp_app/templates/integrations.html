@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Integrations - AdventureWorks ERP (demo){% endblock %}
+{% block body %}
+<h1>Integrations</h1>
+<p class="muted">How outside systems get data out of this ERP: connect to the database, extract files, call the REST API, or receive changes pushed as webhooks.
+  <a href="#connect">Connect</a> &middot; <a href="#extract">Extract and download</a> &middot; <a href="#api">REST API</a> &middot;
+  <a href="#webhooks">Webhooks</a> &middot; <a href="#simulator">Live simulator</a></p>
+
+<section id="connect">
+<h2>1. Connect</h2>
+<div class="cols">
+<div>
+<h3>Database (read-only login)</h3>
+<table class="kv">
+  <tr><th>Type</th><td>PostgreSQL 17</td></tr>
+  <tr><th>Host</th><td><code>{{ conn.host }}</code></td></tr>
+  <tr><th>Port</th><td><code>{{ conn.port }}</code></td></tr>
+  <tr><th>Database</th><td><code>{{ conn.database }}</code></td></tr>
+  <tr><th>Username</th><td><code>{{ conn.user }}</code>
+      {% if not conn.exists %}<span class="warn">not created yet: run db/readonly_login.sql as postgres, then restart the app</span>{% endif %}</td></tr>
+  <tr><th>Password</th><td><span class="secret" data-secret="{{ conn.password }}">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+      <button type="button" class="small" onclick="toggleSecret(this)">Show</button> <button type="button" class="small" onclick="copySecret(this)">Copy</button></td></tr>
+  <tr><th>JDBC URL</th><td><code>jdbc:postgresql://{{ conn.host }}:{{ conn.port }}/{{ conn.database }}</code></td></tr>
+  <tr><th>Schemas</th><td>sales, production, person, purchasing, humanresources (SELECT only)</td></tr>
+</table>
+<p><button type="button" onclick="testConnection(this)">Test connection</button> <span id="conn-result" class="result"></span></p>
+</div>
+<div>
+<h3>REST API</h3>
+<table class="kv">
+  <tr><th>Base URL</th><td><code>{{ base }}/api/v1</code></td></tr>
+  <tr><th>API key</th><td><span class="secret" data-secret="{{ api_key }}">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>
+      <button type="button" class="small" onclick="toggleSecret(this)">Show</button> <button type="button" class="small" onclick="copySecret(this)">Copy</button></td></tr>
+  <tr><th>Send it as</th><td><code>X-API-Key: &lt;key&gt;</code> header</td></tr>
+  <tr><th>Times</th><td>UTC, ISO 8601</td></tr>
+  <tr><th>Reference</th><td><a href="/api/docs">/api/docs</a> (try calls in the browser)</td></tr>
+</table>
+</div>
+</div>
+</section>
+
+<section id="extract">
+<h2>2. Extract and download</h2>
+<form id="extract-form" class="filters" onsubmit="return runExtract(event)">
+  <label>Dataset <select name="dataset">{% for k, d in datasets.items() %}<option value="{{ k }}">{{ d.label }}</option>{% endfor %}</select></label>
+  <label>From <input type="date" name="date_from"></label>
+  <label>To <input type="date" name="date_to"></label>
+  <label>or changed since (UTC) <input type="text" name="changed_since" size="22" placeholder="2025-06-01T00:00:00Z"></label>
+  <button>Extract</button>
+  <span id="extract-actions" hidden>&nbsp; <a id="dl-csv" class="button" href="#">Download CSV</a> <a id="dl-json" class="button" href="#">Download JSON</a></span>
+</form>
+<p class="muted">Dates filter on order date for orders and lines, and on last-changed for the rest. Rows come out by id. The download runs the same query as the preview, so the counts match.</p>
+<div id="extract-result"></div>
+<h3>Export log</h3>
+<table class="grid compact">
+  <thead><tr><th>#</th><th>When (UTC)</th><th>Dataset</th><th>Filters</th><th>Format</th><th class="num">Rows</th></tr></thead>
+  <tbody>{% for e in exports %}<tr><td>{{ e.export_id }}</td><td>{{ e.created_at | when }}</td><td>{{ e.dataset }}</td>
+    <td><code>{{ e.filters | tojson }}</code></td><td>{{ e.file_format }}</td><td class="num">{{ "{:,}".format(e.row_count) }}</td></tr>
+  {% else %}<tr><td colspan="6" class="muted">No exports yet.</td></tr>{% endfor %}</tbody>
+</table>
+</section>
+
+<section id="api">
+<h2>3. REST API</h2>
+<table class="grid">
+  <thead><tr><th>Endpoint</th><th>Returns</th><th>Example (PowerShell)</th></tr></thead>
+  <tbody>
+  <tr><td class="ep"><code>GET /api/v1/sales-orders</code></td><td>Order headers, each with its lines nested</td>
+      <td><code>curl.exe -H "X-API-Key: &lt;key&gt;" "{{ base }}/api/v1/sales-orders?modified_since=2025-06-01T00:00:00Z&amp;limit=500"</code></td></tr>
+  <tr><td class="ep"><code>GET /api/v1/sales-orders/{id}</code></td><td>One order with its lines</td>
+      <td><code>curl.exe -H "X-API-Key: &lt;key&gt;" {{ base }}/api/v1/sales-orders/43659</code></td></tr>
+  <tr><td class="ep"><code>GET /api/v1/customers</code></td><td>Customers with current address and email</td>
+      <td><code>curl.exe -H "X-API-Key: &lt;key&gt;" "{{ base }}/api/v1/customers?limit=100"</code></td></tr>
+  <tr><td class="ep"><code>GET /api/v1/products</code></td><td>Products with category and quantity on hand</td>
+      <td><code>curl.exe -H "X-API-Key: &lt;key&gt;" "{{ base }}/api/v1/products?limit=100"</code></td></tr>
+  <tr><td class="ep"><code>GET /api/v1/inventory</code></td><td>Stock per product and location (id = product_id x 1000 + location_id)</td>
+      <td><code>curl.exe -H "X-API-Key: &lt;key&gt;" "{{ base }}/api/v1/inventory?limit=100"</code></td></tr>
+  </tbody>
+</table>
+<table class="kv">
+  <tr><th>modified_since</th><td>Rows changed at or after this UTC time.</td></tr>
+  <tr><th>after_id</th><td>With modified_since: continue after this row, i.e. (modified_at, id) &gt; (modified_since, after_id). Rows that share one timestamp are never skipped or repeated.</td></tr>
+  <tr><th>limit</th><td>Rows per page, default 500, max 1000.</td></tr>
+  <tr><th>Paging</th><td>Rows come oldest change first, then by id. Each page has <code>next</code> (modified_since + after_id) and <code>next_url</code>. A page shorter than limit means you've caught up.</td></tr>
+  <tr><th>Errors</th><td>401 with no or a wrong key, 400 for a bad time or after_id without modified_since.</td></tr>
+</table>
+</section>
+
+<section id="webhooks">
+<h2>4. Webhooks (live push)</h2>
+<form method="post" action="/integrations/webhooks" class="filters">
+  <label>Receiver URL <input type="url" name="url" size="44" required placeholder="http://localhost:8000/webhooks/adventureworks"></label>
+  {% for ev in events %}<label><input type="checkbox" name="events" value="{{ ev }}" checked> {{ ev }}</label>{% endfor %}
+  <button>Register</button>
+</form>
+<p class="muted">Each event is a JSON POST with headers <code>X-ERP-Event</code>, <code>X-ERP-Delivery</code>, <code>X-ERP-Timestamp</code> and
+  <code>X-ERP-Signature: sha256=HMAC_SHA256(secret, timestamp + "." + body)</code>. Failed deliveries are retried after 2 and 8 seconds (3 tries).
+  To prove delivery without a receiver, register the throwaway echo <code>{{ base }}/dev/echo</code>.</p>
+<table class="grid compact">
+  <thead><tr><th>#</th><th>URL</th><th>Events</th><th>Signing secret</th><th>State</th><th></th></tr></thead>
+  <tbody>
+  {% for h in hooks %}
+  <tr><td>{{ h.webhook_id }}</td><td><code>{{ h.url }}</code></td><td>{{ h.events | join(', ') }}</td>
+    <td><span class="secret" data-secret="{{ h.secret }}">&bull;&bull;&bull;&bull;&bull;&bull;</span> <button type="button" class="small" onclick="toggleSecret(this)">Show</button></td>
+    <td>{{ 'Active' if h.active else 'Paused' }}</td>
+    <td class="actions">
+      <form method="post" action="/integrations/webhooks/{{ h.webhook_id }}/test"><button class="small">Send test event</button></form>
+      <form method="post" action="/integrations/webhooks/{{ h.webhook_id }}/toggle"><button class="small">{{ 'Pause' if h.active else 'Resume' }}</button></form>
+      <form method="post" action="/integrations/webhooks/{{ h.webhook_id }}/delete" onsubmit="return confirm('Delete this webhook and its delivery log?')"><button class="small">Delete</button></form>
+    </td></tr>
+  {% else %}<tr><td colspan="6" class="muted">No webhooks registered.</td></tr>{% endfor %}
+  </tbody>
+</table>
+<h3>Delivery log <span class="muted">refreshes every 3 seconds</span></h3>
+<table class="grid compact" id="deliveries">
+  <thead><tr><th>When (UTC)</th><th>Event</th><th>URL</th><th>Result</th><th class="num">HTTP</th><th class="num">Tries</th><th>Error</th></tr></thead>
+  <tbody>{% for d in deliveries %}<tr><td>{{ d.created_at.strftime('%H:%M:%S') }}</td><td>{{ d.event }}</td><td><code>{{ d.url }}</code></td>
+    <td><span class="dl {{ d.status }}">{{ d.status }}</span></td><td class="num">{{ d.http_status or '' }}</td><td class="num">{{ d.attempts }}</td><td>{{ d.last_error or '' }}</td></tr>
+  {% else %}<tr><td colspan="7" class="muted">Nothing sent yet.</td></tr>{% endfor %}</tbody>
+</table>
+{% if echo %}
+<h3>Received by the throwaway echo</h3>
+<table class="grid compact"><thead><tr><th>When (UTC)</th><th>Event</th><th class="num">Bytes</th><th>Signature</th></tr></thead><tbody>
+{% for e in echo %}<tr><td>{{ e.at }}</td><td>{{ e.event }}</td><td class="num">{{ e.bytes }}</td><td><code>{{ e.signature }}</code></td></tr>{% endfor %}
+</tbody></table>
+{% endif %}
+</section>
+
+<section id="simulator">
+<h2>5. Live simulator</h2>
+<div class="cols">
+<div>
+<table class="kv">
+  <tr><th>State</th><td>{% if sim.running and sim_alive %}<span class="dot on"></span>Running{% else %}<span class="dot"></span>Stopped{% endif %}</td></tr>
+  <tr><th>Rate</th><td>{{ sim.orders_per_min }} orders a minute</td></tr>
+  <tr><th>Last started (UTC)</th><td>{{ sim.started_at | when }}</td></tr>
+  <tr><th>This run</th><td>{{ stats.orders_created }} orders created, {{ stats.orders_updated }} moved on, {{ stats.customers_updated }} customers moved house</td></tr>
+  {% if stats.last_error %}<tr><th>Last error</th><td class="warn">{{ stats.last_error }}</td></tr>{% endif %}
+</table>
+<form method="post" action="/integrations/simulator/start" class="filters">
+  <label>Orders a minute <input type="number" name="rate" min="1" max="60" value="{{ sim.orders_per_min }}"></label>
+  <button>{{ 'Update rate' if sim.running and sim_alive else 'Start' }}</button>
+</form>
+<form method="post" action="/integrations/simulator/stop" class="filters"><button {{ 'disabled' if not (sim.running and sim_alive) }}>Stop</button></form>
+</div>
+<div class="muted narrow">
+<p>While it runs, each tick it creates a new order for a real customer with real products at list price (order date and modifieddate = now, <code>comment = 'SIMULATED'</code>).
+It often moves open simulated orders on (In process, Approved, Shipped, now and then Cancelled), and shipping takes the stock out of Finished Goods Storage.
+Now and then a customer moves house: a new address row, with their home address pointing to it. Each change fires its webhook.</p>
+<p>It never edits Microsoft's historical orders. Everything it changes is in <code>erp_app.simulator_log</code>.</p>
+<p>Check it through the API: <code>curl.exe -H "X-API-Key: &lt;key&gt;" "{{ base }}/api/v1/sales-orders?modified_since=&lt;5 minutes ago, UTC&gt;"</code></p>
+</div>
+</div>
+<h3>Recent simulator changes</h3>
+<table class="grid compact">
+  <thead><tr><th>When (UTC)</th><th>Change</th><th>Record</th><th>Detail</th></tr></thead>
+  <tbody>{% for s in sim_log %}<tr><td>{{ s.created_at | when }}</td><td>{{ s.change }}</td>
+    <td>{% if s.change.startswith('order') %}<a href="/orders/{{ s.entity_id }}">SO{{ s.entity_id }}</a>{% else %}<a href="/customers/{{ s.entity_id }}">customer {{ s.entity_id }}</a>{% endif %}</td>
+    <td><code>{{ s.detail | tojson }}</code></td></tr>
+  {% else %}<tr><td colspan="4" class="muted">The simulator hasn't run yet.</td></tr>{% endfor %}</tbody>
+</table>
+</section>
+{% endblock %}
+{% block scripts %}<script>startDeliveries();</script>{% endblock %}

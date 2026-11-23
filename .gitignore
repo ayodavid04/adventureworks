@@ -1,6 +1,7 @@
 # secrets
 .env
 db/setup.sql
+db/readonly_login.sql
 
 # downloaded source files never go in git (scripts/fetch_source.py gets them again)
 data/download/

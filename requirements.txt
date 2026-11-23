@@ -1,3 +1,12 @@
-# the load scripts only need a Postgres driver. Add dbt yourself when you build on top:
-#   pip install "dbt-core>=1.10,<1.13" dbt-postgres
+# load scripts
 psycopg[binary]>=3.2
+
+# the demo ERP front end (python -m erp_app)
+fastapi>=0.115
+uvicorn>=0.30
+jinja2>=3.1
+psycopg-pool>=3.2
+python-multipart>=0.0.9
+
+# add dbt yourself when you build the data side:
+#   pip install "dbt-core>=1.10,<1.13" dbt-postgres

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import status_tag, sim_tag %}
+{% block body %}
+<h1>Home</h1>
+<table class="kv summary">
+  <tr><th>Orders today (UTC)</th><td id="n-today">{{ "{:,}".format(n.today_orders) }}</td><td class="num" id="v-today">{{ n.today_value | money }}</td>
+      <th>Open orders</th><td id="n-open">{{ "{:,}".format(n.open_orders) }}</td></tr>
+  <tr><th>Orders this month</th><td id="n-month">{{ "{:,}".format(n.month_orders) }}</td><td class="num" id="v-month">{{ n.month_value | money }}</td>
+      <th>Simulated orders so far</th><td id="n-sim">{{ "{:,}".format(n.simulated_orders) }}</td></tr>
+  <tr><th>Simulator</th>
+      <td colspan="2" id="sim-state">{% if n.sim.running and n.sim_alive %}<span class="dot on"></span>Running, {{ n.sim.orders_per_min }} orders a minute{% else %}<span class="dot"></span>Stopped{% endif %}</td>
+      <th>Latest order date</th><td id="n-last">{{ n.last_order | when }}</td></tr>
+</table>
+<p class="muted">Start or stop the live simulator on <a href="/integrations#simulator">Integrations</a>. Microsoft's own orders run from May 2022 to June 2025, so today's numbers come only from the simulator.</p>
+
+<h2>Latest order activity <span class="muted">refreshes every 3 seconds</span></h2>
+<table class="grid" id="feed">
+  <thead><tr><th>Order</th><th>Changed (UTC)</th><th>Order date</th><th>Customer</th><th>Territory</th><th>Channel</th><th>Status</th><th class="num">Total due</th></tr></thead>
+  <tbody>
+  {% for r in feed %}
+  <tr><td><a href="/orders/{{ r.id }}">{{ r.sales_order_number }}</a> {{ sim_tag(r.comment) }}</td><td>{{ r.modified_at | when }}</td><td>{{ r.order_date | when }}</td>
+      <td><a href="/customers/{{ r.customer_id }}">{{ r.customer_id }}</a></td><td>{{ r.territory }}</td><td>{{ 'Online' if r.online_order else 'Store' }}</td>
+      <td>{{ status_tag(r.status_code, r.status) }}</td><td class="num">{{ r.total_due | money }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+{% block scripts %}<script>startFeed();</script>{% endblock %}

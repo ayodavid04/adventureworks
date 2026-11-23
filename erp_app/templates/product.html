@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ p.name }} - AdventureWorks ERP (demo){% endblock %}
+{% block body %}
+<p class="crumbs"><a href="/products">Products and stock</a> / {{ p.product_number }}</p>
+<h1>{{ p.name }} <span class="muted">{{ p.product_number }}</span></h1>
+<div class="cols">
+<table class="kv">
+  <tr><th>Category</th><td>{{ p.category or 'Components / parts' }}</td></tr>
+  <tr><th>Subcategory</th><td>{{ p.subcategory or '' }}</td></tr>
+  <tr><th>Colour / size</th><td>{{ p.color or '' }} {{ p.size or '' }}</td></tr>
+  <tr><th>Finished good</th><td>{{ 'Yes' if p.finished_good else 'No (part)' }}</td></tr>
+</table>
+<table class="kv">
+  <tr><th>Standard cost</th><td class="num">{{ p.standard_cost | money }}</td></tr>
+  <tr><th>List price</th><td class="num">{{ p.list_price | money }}</td></tr>
+  <tr><th>On sale</th><td>{{ p.sell_start_date | when }} to {{ (p.sell_end_date | when) if p.sell_end_date else 'now' }}</td></tr>
+  <tr><th>Last changed (UTC)</th><td>{{ p.modified_at | when }}</td></tr>
+</table>
+<table class="kv">
+  <tr><th>Orders with it</th><td class="num">{{ "{:,}".format(sales.orders or 0) }}</td></tr>
+  <tr><th>Units sold</th><td class="num">{{ "{:,}".format(sales.units or 0) }}</td></tr>
+  <tr><th>Revenue</th><td class="num">{{ sales.revenue | money }}</td></tr>
+</table>
+</div>
+<h2>Stock by location</h2>
+<table class="grid">
+  <thead><tr><th>Location</th><th>Shelf</th><th>Bin</th><th class="num">Quantity</th><th>Last changed (UTC)</th></tr></thead>
+  <tbody>
+  {% for s in stock %}<tr><td>{{ s.location }}</td><td>{{ s.shelf }}</td><td>{{ s.bin }}</td><td class="num">{{ "{:,}".format(s.quantity) }}</td><td>{{ s.modifieddate | when }}</td></tr>
+  {% else %}<tr><td colspan="5" class="muted">No stock records for this product.</td></tr>{% endfor %}
+  </tbody>
+  <tfoot><tr><td colspan="3">Total on hand</td><td class="num"><b>{{ "{:,}".format(p.quantity_on_hand) }}</b></td><td></td></tr></tfoot>
+</table>
+{% if prices %}
+<h2>List price history</h2>
+<table class="grid compact"><thead><tr><th>From</th><th>To</th><th class="num">List price</th></tr></thead><tbody>
+{% for r in prices %}<tr><td>{{ r.startdate | when }}</td><td>{{ (r.enddate | when) if r.enddate else 'current' }}</td><td class="num">{{ r.listprice | money }}</td></tr>{% endfor %}
+</tbody></table>
+{% endif %}
+{% endblock %}

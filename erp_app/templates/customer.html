@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, status_tag, sim_tag %}
+{% block title %}{{ c.name }} - AdventureWorks ERP (demo){% endblock %}
+{% block body %}
+<p class="crumbs"><a href="/customers">Customers</a> / {{ c.account_number }}</p>
+<h1>{{ c.name }} <span class="muted">{{ c.customer_type }}</span></h1>
+<div class="cols">
+<table class="kv">
+  <tr><th>Customer ID</th><td>{{ c.id }}</td></tr>
+  <tr><th>Account</th><td>{{ c.account_number }}</td></tr>
+  <tr><th>Territory</th><td>{{ c.territory }}</td></tr>
+  <tr><th>Email</th><td>{{ c.email or '' }}</td></tr>
+</table>
+<table class="kv">
+  <tr><th>Address</th><td>{{ c.address_line1 or '' }}{% if c.address_line2 %}, {{ c.address_line2 }}{% endif %}</td></tr>
+  <tr><th>City</th><td>{{ c.city or '' }}</td></tr>
+  <tr><th>State / province</th><td>{{ c.state_province or '' }} {{ c.postal_code or '' }}</td></tr>
+  <tr><th>Country</th><td>{{ c.country_code or '' }}</td></tr>
+</table>
+<table class="kv">
+  <tr><th>Orders</th><td class="num">{{ "{:,}".format(tot.n) }}</td></tr>
+  <tr><th>Lifetime value</th><td class="num">{{ tot.v | money }}</td></tr>
+  <tr><th>Last changed (UTC)</th><td>{{ c.modified_at | when }}</td></tr>
+</table>
+</div>
+{% if moves %}
+<h2>Address changes made by the simulator</h2>
+<table class="grid compact"><thead><tr><th>When (UTC)</th><th>From</th><th>To</th></tr></thead><tbody>
+{% for m in moves %}<tr><td>{{ m.created_at | when }}</td><td>{{ m.detail.old.addressline1 }}, {{ m.detail.old.city }}</td><td>{{ m.detail.new.addressline1 }}, {{ m.detail.new.city }}</td></tr>{% endfor %}
+</tbody></table>
+{% endif %}
+<h2>Orders</h2>
+{{ pager(pg, args, '/customers/' ~ c.id) }}
+<table class="grid">
+  <thead><tr><th>Order</th><th>Order date</th><th>Shipped</th><th>Channel</th><th>Status</th><th class="num">Total due</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr><td><a href="/orders/{{ r.id }}">{{ r.sales_order_number }}</a> {{ sim_tag(r.comment) }}</td><td>{{ r.order_date | when }}</td><td>{{ r.ship_date | when }}</td>
+      <td>{{ 'Online' if r.online_order else 'Store' }}</td><td>{{ status_tag(r.status_code, r.status) }}</td><td class="num">{{ r.total_due | money }}</td></tr>
+  {% else %}<tr><td colspan="6" class="muted">No orders.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% endblock %}

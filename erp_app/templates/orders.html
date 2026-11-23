@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager, status_tag, sim_tag %}
+{% block body %}
+<h1>Sales orders</h1>
+<form class="filters" method="get">
+  <label>From <input type="date" name="date_from" value="{{ args.date_from }}"></label>
+  <label>To <input type="date" name="date_to" value="{{ args.date_to }}"></label>
+  <label>Status <select name="status"><option value="">All</option>
+    {% for k, v in STATUS.items() %}<option value="{{ k }}" {{ 'selected' if args.status == k|string }}>{{ v }}</option>{% endfor %}</select></label>
+  <label>Territory <select name="territory"><option value="">All</option>
+    {% for t in territories %}<option value="{{ t.id }}" {{ 'selected' if args.territory == t.id|string }}>{{ t.name }} ({{ t.group }})</option>{% endfor %}</select></label>
+  <label>Channel <select name="channel"><option value="">All</option>
+    <option value="online" {{ 'selected' if args.channel == 'online' }}>Online</option>
+    <option value="store" {{ 'selected' if args.channel == 'store' }}>Store (reseller)</option></select></label>
+  <label>Order / PO no. <input type="text" name="q" value="{{ args.q }}" size="12" placeholder="SO43659"></label>
+  <button>Filter</button> <a href="/orders">Clear</a>
+</form>
+{{ pager(pg, args, '/orders') }}
+<table class="grid">
+  <thead><tr><th>Order</th><th>Order date</th><th>Due</th><th>Shipped</th><th>Customer</th><th>Territory</th><th>Channel</th><th>Status</th>
+      <th class="num">Subtotal</th><th class="num">Tax</th><th class="num">Freight</th><th class="num">Total due</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr><td><a href="/orders/{{ r.id }}">{{ r.sales_order_number }}</a> {{ sim_tag(r.comment) }}</td><td>{{ r.order_date | when }}</td><td>{{ r.due_date | when }}</td><td>{{ r.ship_date | when }}</td>
+      <td><a href="/customers/{{ r.customer_id }}">{{ r.customer_name }}</a></td><td>{{ r.territory }}</td><td>{{ 'Online' if r.online_order else 'Store' }}</td>
+      <td>{{ status_tag(r.status_code, r.status) }}</td><td class="num">{{ r.subtotal | money }}</td><td class="num">{{ r.tax_amount | money }}</td>
+      <td class="num">{{ r.freight | money }}</td><td class="num">{{ r.total_due | money }}</td></tr>
+  {% else %}<tr><td colspan="12" class="muted">No orders match.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{{ pager(pg, args, '/orders') }}
+{% endblock %}

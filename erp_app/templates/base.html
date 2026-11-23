@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{% block title %}AdventureWorks ERP (demo){% endblock %}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="top">
+  <span class="brand">AdventureWorks ERP <em>(demo)</em></span>
+  <span class="note">Microsoft's AdventureWorks sample data, a fictional company. Orders tagged SIM were made by the simulator.</span>
+  <span class="clock" id="clock"></span>
+</header>
+<nav class="side">
+  <div class="group">Sales</div>
+  <a href="/" class="{{ 'on' if nav == 'home' }}">Home</a>
+  <a href="/orders" class="{{ 'on' if nav == 'orders' }}">Sales orders</a>
+  <a href="/customers" class="{{ 'on' if nav == 'customers' }}">Customers</a>
+  <div class="group">Inventory</div>
+  <a href="/products" class="{{ 'on' if nav == 'products' }}">Products and stock</a>
+  <div class="group">System</div>
+  <a href="/integrations" class="{{ 'on' if nav == 'integrations' }}">Integrations</a>
+  <a href="/api/docs">API reference</a>
+</nav>
+<main>
+{% block body %}{% endblock %}
+</main>
+<script src="/static/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

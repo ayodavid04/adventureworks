@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager %}
+{% block body %}
+<h1>Products and stock</h1>
+<table class="grid compact cats">
+  <thead><tr>{% for c in cats %}<th><a href="/products?category={{ c.category | urlencode }}">{{ c.category }}</a></th>{% endfor %}</tr></thead>
+  <tbody><tr>{% for c in cats %}<td>{{ c.n }} products, {{ "{:,}".format(c.qty or 0) }} on hand</td>{% endfor %}</tr></tbody>
+</table>
+<form class="filters" method="get">
+  <label>Category <select name="category"><option value="">All</option>
+    {% for c in cats %}<option {{ 'selected' if args.category == c.category }}>{{ c.category }}</option>{% endfor %}</select></label>
+  <label>Search <input type="text" name="q" value="{{ args.q }}" size="20" placeholder="name or product no."></label>
+  <label><input type="checkbox" name="stock" value="low" {{ 'checked' if args.stock == 'low' }}> Under 100 on hand</label>
+  <button>Filter</button> <a href="/products">Clear</a>
+</form>
+{{ pager(pg, args, '/products') }}
+<table class="grid">
+  <thead><tr><th>Product no.</th><th>Name</th><th>Category</th><th>Subcategory</th><th>Colour</th><th>Size</th>
+      <th class="num">Std cost</th><th class="num">List price</th><th class="num">On hand</th><th>On sale until</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr><td>{{ r.product_number }}</td><td><a href="/products/{{ r.id }}">{{ r.name }}</a></td><td>{{ r.category or 'Components / parts' }}</td><td>{{ r.subcategory or '' }}</td>
+      <td>{{ r.color or '' }}</td><td>{{ r.size or '' }}</td><td class="num">{{ r.standard_cost | money }}</td><td class="num">{{ r.list_price | money }}</td>
+      <td class="num {{ 'low' if r.quantity_on_hand < 100 }}">{{ "{:,}".format(r.quantity_on_hand) }}</td>
+      <td>{{ (r.sell_end_date | when) if r.sell_end_date else 'current' }}</td></tr>
+  {% else %}<tr><td colspan="10" class="muted">No products match.</td></tr>{% endfor %}
+  </tbody>
+</table>
+{{ pager(pg, args, '/products') }}
+{% endblock %}

@@ -1,0 +1,14 @@
+{% macro pager(pg, args, path) -%}
+<div class="pager">
+  <span>{{ "{:,}".format(pg.total) }} rows</span>
+  {% if pg.page > 1 %}<a href="{{ path }}?{{ args | urlencode }}{{ '&' if args }}page={{ pg.page - 1 }}">&lsaquo; Prev</a>{% endif %}
+  <span>Page {{ pg.page }} of {{ "{:,}".format(pg.pages) }}</span>
+  {% if pg.page < pg.pages %}<a href="{{ path }}?{{ args | urlencode }}{{ '&' if args }}page={{ pg.page + 1 }}">Next &rsaquo;</a>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro status_tag(code, label) -%}<span class="st st{{ code }}">{{ label }}</span>{%- endmacro %}
+
+{% macro sim_tag(comment) -%}
+{% if comment == 'SIMULATED' %}<span class="sim" title="Created by the live simulator, not Microsoft's data">SIM</span>{% endif %}
+{%- endmacro %}

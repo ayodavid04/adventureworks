@@ -1,0 +1,3 @@
+# the load scripts only need a Postgres driver. Add dbt yourself when you build on top:
+#   pip install "dbt-core>=1.10,<1.13" dbt-postgres
+psycopg[binary]>=3.2

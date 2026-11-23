@@ -1,0 +1,17 @@
+# secrets
+.env
+db/setup.sql
+
+# downloaded source files never go in git (scripts/fetch_source.py gets them again)
+data/download/
+
+# python
+.venv/
+__pycache__/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/.user.yml
+logs/

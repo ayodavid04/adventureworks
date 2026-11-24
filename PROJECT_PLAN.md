@@ -8,7 +8,7 @@ Your job: copy its data into your own database, clean it up, build reporting tab
 
 ## What to do next
 
-AW 0.2: make the GitHub repo. Then AW 1.1: write the 5 business questions.
+AW 1.1: write the 5 business questions.
 
 ## Words used here
 
@@ -33,7 +33,7 @@ Get access and somewhere to save your work.
 
 - [x] **AW 0.1 Run the read-only login script**
   - Done already
-- [ ] **AW 0.2 Make a GitHub repo for this project**
+- [x] **AW 0.2 Make a GitHub repo for this project**
   - github.com, then New repository
   - Name it adventureworks-erp, leave it empty (no README)
   - Send Claude the link so it can push the code

@@ -9,6 +9,8 @@ PostgreSQL** and puts a **small demo ERP front end** on it, so it behaves like a
 connect to, extract from and receive changes from. Everything on the data side (extractor, receiver,
 raw landing, dbt, analysis) is mine to write.
 
+How it was built, step by step with screenshots: [docs/BUILD_LOG.md](docs/BUILD_LOG.md). The plan: [PROJECT_PLAN.md](PROJECT_PLAN.md).
+
 ## What's what
 
 | | Where | Who made it |

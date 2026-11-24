@@ -7,8 +7,8 @@ The plan this follows is [PROJECT_PLAN.md](../PROJECT_PLAN.md).
 > AdventureWorks is Microsoft's public sample data (a made-up bike company), not client data.
 
 **Who built what:** the load scripts and the demo ERP front end were written with Claude (an AI
-assistant). I ran every step that needed the postgres superuser myself. Everything from Part 2 on
-(raw landing, extractor, webhook receiver, dbt, analysis) is my own code.
+assistant). I ran every step that needed the postgres superuser myself. Everything from Part 1 on
+(the design, my own warehouse database, the extractor, the webhook receiver, dbt, the analysis) is my own code.
 
 ---
 
@@ -94,8 +94,13 @@ Screenshot: _(add: Test connection result, with the API key hidden)_
 
 ## Next entry template
 
+One entry per task from the planner (AW 1.1, AW 1.2 ...). Copy this to the bottom and fill it in.
+To add a screenshot: take it with Win+Shift+S, click where it goes in this file in Cursor, press
+Ctrl+V. Cursor saves the picture in `docs/screenshots/build/` and puts the link in for you.
+Then rename the file to start with the task number, e.g. `AW-1.1-questions.png`.
+
 ```
-## YYYY-MM-DD: <what> (Part N)
+## YYYY-MM-DD: AW x.y <task name> (Part N)
 
 **Why:**
 
@@ -106,7 +111,7 @@ Screenshot: _(add: Test connection result, with the API key hidden)_
 
 **What went wrong / what I learned:**
 
-Screenshot: screenshots/build/NN-<name>.png
+Screenshot: screenshots/build/AW-x.y-<name>.png
 ```
 
 **Screenshot rule:** never capture a password or the API key (`.env`, a psql line with a password,

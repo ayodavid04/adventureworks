@@ -1,8 +1,9 @@
 {
-  // Pasting a screenshot (Ctrl+V) into any Markdown file under docs/ saves the picture
-  // in docs/screenshots/build/ and inserts the link. Works in Cursor and VS Code.
+  // Pasting a screenshot (Ctrl+V) into a Markdown file in any project's docs/ folder saves the
+  // picture in docs/screenshots/build/ next to it and inserts the link. The path is relative to
+  // the notes file, so it works whichever folder Cursor (or VS Code) has open.
   "markdown.copyFiles.destination": {
-    "docs/**/*.md": "${documentWorkspaceFolder}/docs/screenshots/build/"
+    "**/docs/*.md": "screenshots/build/"
   },
   "markdown.editor.drop.copyIntoWorkspace": "mediaFiles",
   "markdown.editor.filePaste.copyIntoWorkspace": "mediaFiles"

@@ -91,7 +91,7 @@ You can't copy data you don't understand.
   - In PowerShell, run the example call shown on that page
   - Look at 'next' at the bottom of the answer: that's how you ask for the next page
   - Hint: Easiest place: http://localhost:4690/api/docs. Click GET /api/v1/customers, then Try it out
-  - Hint: There's no Authorize button. After Try it out, an x-api-key box appears with the others: paste the key there
+  - Hint: Click Authorize (top right), paste the key, Authorize, Close. Every Try it out then sends it
   - Hint: Set limit to 5, click Execute. 200 means it worked, 401 means the key is missing or wrong
   - Hint: Page 2: copy modified_since and after_id from 'next' into their boxes, Execute again. That's what your script will do in a loop
   - Hint: Then the same in Postman: GET the address, Headers tab, key X-API-Key, value your key, Send
